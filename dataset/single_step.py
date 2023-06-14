@@ -2,6 +2,7 @@ import pickle
 import numpy 
 import torch
 from torch.utils.data.dataset import Dataset
+from pathlib import Path
 
 class SingleStep(Dataset):
 
@@ -29,6 +30,30 @@ class SingleStep(Dataset):
             'template_idx': self.temp_hash[self.templates[idx]]
         }
         return pack
+    
+    def _vis(self):
+        fp_distribution = {}
+        total_cnt = 0
+        for i in range(len(self.fingerprints)):
+            fp = self.fingerprints[i]
+            temp = self.templates[i]
+            temp_id = self.temp_hash[temp]
+            fp_distribution[temp_id] = fp_distribution.get(temp_id, 0) + 1
+            total_cnt += 1
+        print(total_cnt)
+        return fp_distribution
+        
+def vis_distribution():
+    import matplotlib.pyplot as plt
+    data = SingleStep(Path('resources')/'task1_train.pkl', temp_hash_path=Path('resources')/'temp_hash.pkl')
+    fp_distribution = data._vis()
+    plt.bar(fp_distribution.keys(), fp_distribution.values())
+    plt.savefig('./pdf.png')
+
+if __name__ == '__main__':
+    vis_distribution()
+
+
 
 
 
