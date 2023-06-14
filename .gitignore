@@ -1,2 +1,3 @@
-/sources
+/resources
 **/__pycache__/**
+/checkpoint/**
