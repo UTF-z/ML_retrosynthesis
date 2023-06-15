@@ -15,6 +15,7 @@ class SingleStep(Dataset):
         self.template_num = len(self.temp_hash)
         self.ids = data['ids']
         self.classes = data['classes']
+        self.smiles = data['smiles']
         self.fingerprints = data['fingerprints']
         self.templates = data['templates']
     
@@ -26,6 +27,7 @@ class SingleStep(Dataset):
             'id': self.ids[idx],
             'class': self.classes[idx],
             'fingerprint': torch.FloatTensor(self.fingerprints[idx]),
+            'smile': self.smiles[idx],
             'template': self.templates[idx],
             'template_idx': self.temp_hash[self.templates[idx]]
         }

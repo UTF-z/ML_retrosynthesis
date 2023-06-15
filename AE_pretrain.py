@@ -1,12 +1,15 @@
+import sys
+sys.path.append('.')
 import torch
 from torch.utils.data import DataLoader, Dataset, random_split
 import os
 import pickle as pkl
 from tqdm import tqdm
-from utils import count_parameters, save_best, load_best
-from model import MLP, AutoEncoder
+from utils.utils import count_parameters, save_best, load_best
+from model.networks import MLP, AutoEncoder
 import argparse
 import numpy as np
+import torch.nn.functional as F
 
 def build_data_pretrain(root_dir=os.path.join(".","MoleculeEvaluationData")):
     path = os.path.join(root_dir,"AE_data.pkl")
@@ -51,15 +54,14 @@ def test(model, loader, device="cpu"):
     model.eval()
     cnt = []
     avg_loss = []
-    for data,label in loader:
+    for data,_ in loader:
         data=data.to(device=device)
-        label=label.to(device=device)
-        pred = model(data)
-        loss = mse(pred,label)
+        pred, _ = model(data)
+        loss = F.l1_loss(pred,data)
         cnt.append(data.shape[0])
         avg_loss.append(loss.item())
     model.train()
-    return sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt), None
+    return sum([avg_loss[j] * cnt[j] for j in range(len(cnt))]) / sum(cnt), None
 
 if __name__ == "__main__":
     seed=8192
@@ -89,42 +91,48 @@ if __name__ == "__main__":
                                                                batch_size)
     # logger
     log_dir = os.path.join(".","log","pretrain")
+    ckpt_dir = os.path.join(".","checkpoint","pretrain")
     os.makedirs(log_dir,exist_ok=True)
+    os.makedirs(ckpt_dir,exist_ok=True)
     train_logger = open(os.path.join(log_dir,"train_logger.txt"),"wt")
     val_logger = open(os.path.join(log_dir,"val_logger.txt"),"wt")
     # build model
     model = AutoEncoder(in_dim,50)
     model.to(device=device)
-    mse = torch.nn.MSELoss()
+    criterion = torch.nn.L1Loss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=lr,
                                  weight_decay=weight_decay)
+    best_loss = 100.
+    val_loss = 0.
     tbar = tqdm(range(episode))
     for e in range(episode):
-        best_loss = 100.
         train_cnt = []
         train_loss = []
-        print("Here!")
         for data, _ in train_loader:
             data=data.to(device=device)
             optimizer.zero_grad()
-            pred = model(data)
-            loss = mse(pred,data)
+            pred, z = model(data)
+            loss = criterion(pred,data)
             loss.backward()
             optimizer.step()
             train_cnt.append(data.shape[0])
             train_loss.append(loss.item())
-        print(e,' ',sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt), file=train_logger)
-        if e % 5 == 0:
+        avg_loss = sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt)
+        print(e,' ',avg_loss, file=train_logger)
+        if (e+1) % 5 == 0 or e == 0:
             with torch.no_grad():
                 val_loss,_ = test(model,val_loader,device=device)
             if val_loss <= best_loss:
-                save_best(model,"baseline_best.pth")
+                best_loss = val_loss
+                save_best(model,os.path.join(ckpt_dir,"baseline_best.pth"))
             print(e, ' ', val_loss, file=val_logger)
-        tbar.set_postfix_str("loss: {0:.5f}".format(best_loss))  
+        tbar.set_postfix_str("train loss: {0:.5f}, val loss: {1:.5f}".format(avg_loss,val_loss))  
         tbar.update()
 
     with torch.no_grad():
         test_loss,_ = test(model,test_loader,device=device)
     print("Finally, Test Loss:", ' ', test_loss, file=train_logger)
     print("Finally, Test Loss:", ' ', test_loss, file=val_logger)
+    train_logger.close()
+    val_logger.close()

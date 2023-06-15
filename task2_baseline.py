@@ -3,10 +3,11 @@ from torch.utils.data import DataLoader, Dataset, random_split
 import os
 import pickle as pkl
 from tqdm import tqdm
-from utils import count_parameters, save_best, load_best
-from model import MLP
+from utils.utils import count_parameters, save_best, load_best
+from model.networks import MLP, PretrainedRegresser
 import argparse
 import numpy as np
+import torch.nn.functional as F
 
 def build_data_task2(root_dir=os.path.join(".","MoleculeEvaluationData"),unpack=True):
     train_path = os.path.join(root_dir,"train.pkl")
@@ -15,6 +16,8 @@ def build_data_task2(root_dir=os.path.join(".","MoleculeEvaluationData"),unpack=
     test_pkl = open(test_path,"rb")
     train_data = pkl.load(train_pkl)
     test_data = pkl.load(test_pkl)
+    train_pkl.close()
+    test_pkl.close()
     train_size = train_data['packed_fp'].shape[0]
     test_size = test_data['packed_fp'].shape[0]
     if unpack:
@@ -43,7 +46,7 @@ def build_loader_task2(train_data,test_data,val_ratio=0.1,batch_size=512):
     trainset = Task2(train_data)
     val_size = int(len(trainset)*val_ratio)
     train_size = len(trainset) - val_size
-    if val_size != 0:
+    if val_size != 0.:
         trainset, valset = random_split(trainset,
                     [train_size,val_size],
                     torch.Generator().manual_seed(seed))
@@ -73,11 +76,11 @@ def test(model, loader, device="cpu"):
         data=data.to(device=device)
         label=label.to(device=device)
         pred = model(data)
-        loss = mse(pred,label)
+        loss = F.l1_loss(pred,label)
         cnt.append(data.shape[0])
         avg_loss.append(loss.item())
     model.train()
-    return sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt), None
+    return sum([avg_loss[j] * cnt[j] for j in range(len(cnt))]) / sum(cnt), None
 
 if __name__ == "__main__":
     seed=8192
@@ -87,38 +90,51 @@ if __name__ == "__main__":
     torch.backends.cudnn.deterministic = True
     # parser
     parser=argparse.ArgumentParser()
-    parser.add_argument("--batch",type=int,default=1024)
-    parser.add_argument("--episode",type=int,default=50)
-    parser.add_argument("--lr",type=float,default=1e-3)
-    parser.add_argument("--w",type=float,default=0.)
-    parser.add_argument("--device",type=str,default="cpu")
+    parser.add_argument("--batch",type=int,default=2048)
+    parser.add_argument("--episode",type=int,default=1000)
+    parser.add_argument("--lr",type=float,default=5e-4)
+    parser.add_argument("--w",type=float,default=5e-4)
+    parser.add_argument("--device",type=str,default="cuda")
+    parser.add_argument("--pretrain",action="store_true",default=False)
     args=parser.parse_args()
-    val_ratio = 0.1
+    val_ratio = 0.
     batch_size = args.batch
     episode = args.episode
     lr = args.lr
     weight_decay = args.w
     device = args.device
+    pretrain = args.pretrain
     # build data
-    train_data, test_data = build_data_task2(os.path.join(".","MoleculeEvaluationData"))
+    train_data, test_data = build_data_task2(os.path.join(".","resources","MoleculeEvaluationData"))
     in_dim = train_data[0].shape[1]
     train_loader, val_loader, test_loader = build_loader_task2(train_data,
                                                                test_data,
                                                                val_ratio,
                                                                batch_size)
     # logger
-    train_logger = open("train_logger.txt","wt")
-    val_logger = open("val_logger.txt","wt")
+    log_dir = os.path.join(".","log","task2","pretrain" if pretrain else "baseline")
+    ckpt_dir = os.path.join(".","checkpoint","task2","pretrain" if pretrain else "baseline")
+    os.makedirs(log_dir,exist_ok=True)
+    os.makedirs(ckpt_dir,exist_ok=True)
+    train_logger = open(os.path.join(log_dir,"train_logger.txt"),"wt")
+    val_logger = open(os.path.join(log_dir,"val_logger.txt"),"wt")
     # build model
-    model = MLP(in_dim=in_dim,hid_dim=[1024,512],out_dim=1,act_func="relu")
+    if not pretrain:
+        model = MLP(sizes=[in_dim,512,128,1],dropout=0.1,act_func="elu",last_act="elu")
+        # model = PretrainedRegresser(in_dim,act_func="relu")
+    else:
+        model = PretrainedRegresser(in_dim,act_func="relu")
+        pretrain_dir = os.path.join(".","checkpoint","pretrain")
+        model.embed.load_state_dict(load_best(os.path.join(pretrain_dir,"baseline_best.pth")))
     model.to(device=device)
-    mse = torch.nn.MSELoss()
+    mse = torch.nn.L1Loss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=lr,
                                  weight_decay=weight_decay)
+    best_loss = 100.
+    val_loss = 0.
     tbar = tqdm(range(episode))
     for e in range(episode):
-        best_loss = 100.
         train_cnt = []
         train_loss = []
         for data, label in train_loader:
@@ -131,17 +147,23 @@ if __name__ == "__main__":
             optimizer.step()
             train_cnt.append(data.shape[0])
             train_loss.append(loss.item())
-        print(e,' ',sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt), file=train_logger)
-        if e % 5 == 0:
+        avg_loss = sum([train_loss[j] * train_cnt[j] for j in range(len(train_cnt))]) / sum(train_cnt)
+        print(e,' ',avg_loss, file=train_logger)
+        if (e+1) % 1 == 0 or e == 0:
             with torch.no_grad():
-                val_loss,_ = test(model,val_loader,device=device)
+                val_loss,_ = test(model,test_loader,device=device)
             if val_loss <= best_loss:
-                save_best(model,"baseline_best.pth")
+                best_loss = val_loss
+                save_best(model,os.path.join(ckpt_dir,"baseline_best.pth"))
             print(e, ' ', val_loss, file=val_logger)
-        tbar.set_postfix_str("loss: {0:.5f}".format(best_loss))  
+        tbar.set_postfix_str("train loss: {0:.5f}, val loss: {1:.5f}".format(avg_loss,val_loss))  
         tbar.update()
 
     with torch.no_grad():
+        model.load_state_dict(load_best(os.path.join(ckpt_dir,"baseline_best.pth")))
         test_loss,_ = test(model,test_loader,device=device)
+    print("Finally, Test Loss:", ' ', test_loss)
     print("Finally, Test Loss:", ' ', test_loss, file=train_logger)
     print("Finally, Test Loss:", ' ', test_loss, file=val_logger)
+    train_logger.close()
+    val_logger.close()

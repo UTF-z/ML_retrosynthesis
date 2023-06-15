@@ -29,6 +29,7 @@ def get_temp(reactants, product):
 
 def generate_data():
     temp_hash = {}
+    logger.remove(None)
     logger.add(Path('task1_datagen.log'))
 
     raw_list = ['raw_train.csv', 'raw_val.csv', 'raw_test.csv']
