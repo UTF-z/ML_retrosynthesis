@@ -1,0 +1,19 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"C[Si](C)(C)CCOCn1cc(C2CCc3c(C(=O)O)nn(COCC[Si](C)(C)C)c3C2)cn1" [color=red shape=box style=filled]
+	"[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" [color=red shape=rarrow style=filled]
+	"C[Si](C)(C)CCOCn1cc(C2CCc3c(C(=O)O)nn(COCC[Si](C)(C)C)c3C2)cn1" -> "[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" [label=0.001]
+	"COC(=O)c1nn(COCC[Si](C)(C)C)c2c1CCC(c1cnn(COCC[Si](C)(C)C)c1)C2" [color=red shape=box style=filled]
+	"[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" -> "COC(=O)c1nn(COCC[Si](C)(C)C)c2c1CCC(c1cnn(COCC[Si](C)(C)C)c1)C2" [label=""]
+	"[#7;a_3]_[n;H0;D3;+0_4](_[c_5])-[CH2;D2;+0_1]-[#8_2]>>Cl-[CH2;D2;+0_1]-[#8_2].[#7;a_3]_[nH;D2;+0_4]_[c_5]" [color=red shape=rarrow style=filled]
+	"COC(=O)c1nn(COCC[Si](C)(C)C)c2c1CCC(c1cnn(COCC[Si](C)(C)C)c1)C2" -> "[#7;a_3]_[n;H0;D3;+0_4](_[c_5])-[CH2;D2;+0_1]-[#8_2]>>Cl-[CH2;D2;+0_1]-[#8_2].[#7;a_3]_[nH;D2;+0_4]_[c_5]" [label=1.125]
+	"C[Si](C)(C)CCOCCl" [color=lightyellow shape=box style=filled]
+	"[#7;a_3]_[n;H0;D3;+0_4](_[c_5])-[CH2;D2;+0_1]-[#8_2]>>Cl-[CH2;D2;+0_1]-[#8_2].[#7;a_3]_[nH;D2;+0_4]_[c_5]" -> "C[Si](C)(C)CCOCCl" [label=""]
+	"C[Si](C)(C)CCOCn1nc(C(=O)O)c2c1CC(c1cn[nH]c1)CC2" [color=red shape=box style=filled]
+	"[#7;a_3]_[n;H0;D3;+0_4](_[c_5])-[CH2;D2;+0_1]-[#8_2]>>Cl-[CH2;D2;+0_1]-[#8_2].[#7;a_3]_[nH;D2;+0_4]_[c_5]" -> "C[Si](C)(C)CCOCn1nc(C(=O)O)c2c1CC(c1cn[nH]c1)CC2" [label=""]
+	"[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" [color=red shape=rarrow style=filled]
+	"C[Si](C)(C)CCOCn1nc(C(=O)O)c2c1CC(c1cn[nH]c1)CC2" -> "[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" [label=10.766]
+	"CCOC(=O)c1nn(COCC[Si](C)(C)C)c2c1CCC(c1cnn(COCC[Si](C)(C)C)c1)C2" [color=red shape=box style=filled]
+	"[O;D1;H0_3]=[C_2]-[OH;D1;+0_1]>>C-C-[O;H0;D2;+0_1]-[C_2]=[O;D1;H0_3]" -> "CCOC(=O)c1nn(COCC[Si](C)(C)C)c2c1CCC(c1cnn(COCC[Si](C)(C)C)c1)C2" [label=""]
+}

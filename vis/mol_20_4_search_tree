@@ -1,0 +1,23 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)COC(C)(C)OC1" [color=red shape=box style=filled]
+	"[c_4]-[O;H0;D2;+0_3]-[CH2;D2;+0_1]-[c_2]>>Br-[CH2;D2;+0_1]-[c_2].[OH;D1;+0_3]-[c_4]" [color=red shape=rarrow style=filled]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)COC(C)(C)OC1" -> "[c_4]-[O;H0;D2;+0_3]-[CH2;D2;+0_1]-[c_2]>>Br-[CH2;D2;+0_1]-[c_2].[OH;D1;+0_3]-[c_4]" [label=2.524]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[S;H0;D2;+0_4]-[c_5]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].[SH;D1;+0_4]-[c_5]" [color=red shape=rarrow style=filled]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)COC(C)(C)OC1" -> "[c_2]_[c;H0;D3;+0_1](_[c_3])-[S;H0;D2;+0_4]-[c_5]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].[SH;D1;+0_4]-[c_5]" [label=3.460]
+	"[C_8]-[NH;D2;+0_9]-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7]>>C-C(-C)(-C)-O-C(=O)-O-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7].[C_8]-[NH2;D1;+0_9]" [color=red shape=rarrow style=filled]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)COC(C)(C)OC1" -> "[C_8]-[NH;D2;+0_9]-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7]>>C-C(-C)(-C)-O-C(=O)-O-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7].[C_8]-[NH2;D1;+0_9]" [label=3.493]
+	BrCc1ccccc1 [color=lightyellow shape=box style=filled]
+	"[c_4]-[O;H0;D2;+0_3]-[CH2;D2;+0_1]-[c_2]>>Br-[CH2;D2;+0_1]-[c_2].[OH;D1;+0_3]-[c_4]" -> BrCc1ccccc1 [label=""]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(O)c4)ccc3C2)COC(C)(C)OC1" [color=red shape=box style=filled]
+	"[c_4]-[O;H0;D2;+0_3]-[CH2;D2;+0_1]-[c_2]>>Br-[CH2;D2;+0_1]-[c_2].[OH;D1;+0_3]-[c_4]" -> "CC(C)(C)OC(=O)NC1(C2CCc3cc(Sc4cccc(O)c4)ccc3C2)COC(C)(C)OC1" [label=""]
+	"Brc1cccc(OCc2ccccc2)c1" [color=lightyellow shape=box style=filled]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[S;H0;D2;+0_4]-[c_5]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].[SH;D1;+0_4]-[c_5]" -> "Brc1cccc(OCc2ccccc2)c1" [label=""]
+	"CC(C)(C)OC(=O)NC1(C2CCc3cc(S)ccc3C2)COC(C)(C)OC1" [color=red shape=box style=filled]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[S;H0;D2;+0_4]-[c_5]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].[SH;D1;+0_4]-[c_5]" -> "CC(C)(C)OC(=O)NC1(C2CCc3cc(S)ccc3C2)COC(C)(C)OC1" [label=""]
+	"CC(C)(C)OC(=O)OC(=O)OC(C)(C)C" [color=lightyellow shape=box style=filled]
+	"[C_8]-[NH;D2;+0_9]-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7]>>C-C(-C)(-C)-O-C(=O)-O-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7].[C_8]-[NH2;D1;+0_9]" -> "CC(C)(C)OC(=O)OC(=O)OC(C)(C)C" [label=""]
+	"CC1(C)OCC(N)(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)CO1" [color=red shape=box style=filled]
+	"[C_8]-[NH;D2;+0_9]-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7]>>C-C(-C)(-C)-O-C(=O)-O-[C;H0;D3;+0_1](=[O;D1;H0_2])-[#8_3]-[C_4](-[C;D1;H3_5])(-[C;D1;H3_6])-[C;D1;H3_7].[C_8]-[NH2;D1;+0_9]" -> "CC1(C)OCC(N)(C2CCc3cc(Sc4cccc(OCc5ccccc5)c4)ccc3C2)CO1" [label=""]
+}

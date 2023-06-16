@@ -1,0 +1,5 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"C#CC1(O)C(C)=CC2(CC1(C)C(F)(F)F)OC(C)C(C)O2" [color=red shape=box style=filled]
+}

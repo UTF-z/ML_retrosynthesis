@@ -2,6 +2,7 @@ import numpy as np
 from pathlib import Path
 import numpy 
 from model.tree import Tree 
+from model.tree import viz_search_tree
 from model.networks import Baseline, MLP
 from dataset.multi_step import MultiStep
 from utils.utils import load_best
@@ -75,6 +76,7 @@ def task3(model1_path, model2_path):
                 length_ratio_lst.append(length_ratio)
             tbar.set_postfix_str(f'success_cnt:{success_cnt}')
             tbar.update()
+        # tree.viz_search_tree('tree_visual')
     success_rate = success_cnt / total_mol_cnt
     avg_length_ratio = np.mean(length_ratio_lst)
     print(success_rate, avg_length_ratio)

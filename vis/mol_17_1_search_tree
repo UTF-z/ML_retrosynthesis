@@ -1,0 +1,5 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"COC(=O)CC12CCC(c3ccc(Br)cc3)(CC1)CO2" [color=red shape=box style=filled]
+}

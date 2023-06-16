@@ -9,6 +9,7 @@ import networkx as nx
 from graphviz import Digraph
 from queue import Queue
 
+
 MAX_STEPS = 500
 
 class MolNode(object):
@@ -233,7 +234,8 @@ class Tree(object):
                 self.remove_frontier(mol_node,succ=False)
                 return False
             else:
-                self.frontier.append(mol_node)
+                if mol_node.succ is None or not mol_node.succ:
+                    self.frontier.append(mol_node)
         reaction_node.rn = cost
         for cld in reaction_node.children:
             reaction_node.rn += cld.rn
@@ -391,12 +393,50 @@ class Tree(object):
 
     def value_fn(self, fp):
         return 0.
-
-    def viz_search_tree(self, viz_file: str):
+    
+    def viz_search_tree(self, viz_file):
         G = Digraph('G', filename=viz_file)
         G.attr(rankdir='LR')
         G.attr('node', shape='box')
         G.format = 'pdf'
+
+        node_queue = Queue()
+        node_queue.put((self.root, None))
+        while not node_queue.empty():
+            node, parent = node_queue.get()
+
+            if node.open:
+                color = 'lightgrey'
+            else:
+                color = 'aquamarine'
+
+            if hasattr(node, 'mol'):
+                shape = 'box'
+            else:
+                shape = 'rarrow'
+
+            if node.succ:
+                color = 'lightblue'
+                if hasattr(node, 'mol') and node.is_known:
+                    color = 'lightyellow'
+
+            G.node(node.serialize(), shape=shape, color=color, style='filled')
+
+            label = ''
+            if hasattr(parent, 'mol'):
+                label = '%.3f' % node.cost
+            if parent is not None:
+                G.edge(parent.serialize(), node.serialize(), label=label)
+
+            if node.children is not None:
+                for c in node.children:
+                    node_queue.put((c, node))
+
+        G.render()
+
+
+    # def expand(self, mol_node, reactant_lists, costs, templates):
+    #     assert not mol_node.is_known and not mol_node.children
 
         node_queue = Queue()
         node_queue.put((self.root, None))

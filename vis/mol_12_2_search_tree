@@ -1,0 +1,11 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"O=[N+]([O-])c1ccc(OC2(S(=O)(=O)c3ccccc3)CC2)nc1Cl" [color=red shape=box style=filled]
+	"[#7;a_2]_[c;H0;D3;+0_1](_[c_3])-[O;H0;D2;+0_5]-[C_4]>>Cl-[c;H0;D3;+0_1](_[#7;a_2])_[c_3].[C_4]-[OH;D1;+0_5]" [color=red shape=rarrow style=filled]
+	"O=[N+]([O-])c1ccc(OC2(S(=O)(=O)c3ccccc3)CC2)nc1Cl" -> "[#7;a_2]_[c;H0;D3;+0_1](_[c_3])-[O;H0;D2;+0_5]-[C_4]>>Cl-[c;H0;D3;+0_1](_[#7;a_2])_[c_3].[C_4]-[OH;D1;+0_5]" [label=0.585]
+	"O=S(=O)(c1ccccc1)C1(O)CC1" [color=red shape=box style=filled]
+	"[#7;a_2]_[c;H0;D3;+0_1](_[c_3])-[O;H0;D2;+0_5]-[C_4]>>Cl-[c;H0;D3;+0_1](_[#7;a_2])_[c_3].[C_4]-[OH;D1;+0_5]" -> "O=S(=O)(c1ccccc1)C1(O)CC1" [label=""]
+	"O=[N+]([O-])c1ccc(Cl)nc1Cl" [color=lightyellow shape=box style=filled]
+	"[#7;a_2]_[c;H0;D3;+0_1](_[c_3])-[O;H0;D2;+0_5]-[C_4]>>Cl-[c;H0;D3;+0_1](_[#7;a_2])_[c_3].[C_4]-[OH;D1;+0_5]" -> "O=[N+]([O-])c1ccc(Cl)nc1Cl" [label=""]
+}

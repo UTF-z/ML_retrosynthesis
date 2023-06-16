@@ -1,0 +1,11 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"CCc1nc(C)c(C(=O)Nc2ccc(-c3ccc(C45CCC(CC(=O)OC)(CC4)OC5)cc3)cc2)o1" [color=red shape=box style=filled]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[c;H0;D3;+0_4](_[c_5])_[c_6]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].C-C1(-C)-O-B(-[c;H0;D3;+0_4](_[c_5])_[c_6])-O-C-1(-C)-C" [color=red shape=rarrow style=filled]
+	"CCc1nc(C)c(C(=O)Nc2ccc(-c3ccc(C45CCC(CC(=O)OC)(CC4)OC5)cc3)cc2)o1" -> "[c_2]_[c;H0;D3;+0_1](_[c_3])-[c;H0;D3;+0_4](_[c_5])_[c_6]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].C-C1(-C)-O-B(-[c;H0;D3;+0_4](_[c_5])_[c_6])-O-C-1(-C)-C" [label=0.004]
+	"CCc1nc(C)c(C(=O)Nc2ccc(B3OC(C)(C)C(C)(C)O3)cc2)o1" [color=red shape=box style=filled]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[c;H0;D3;+0_4](_[c_5])_[c_6]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].C-C1(-C)-O-B(-[c;H0;D3;+0_4](_[c_5])_[c_6])-O-C-1(-C)-C" -> "CCc1nc(C)c(C(=O)Nc2ccc(B3OC(C)(C)C(C)(C)O3)cc2)o1" [label=""]
+	"COC(=O)CC12CCC(c3ccc(Br)cc3)(CC1)CO2" [color=aquamarine shape=box style=filled]
+	"[c_2]_[c;H0;D3;+0_1](_[c_3])-[c;H0;D3;+0_4](_[c_5])_[c_6]>>Br-[c;H0;D3;+0_1](_[c_2])_[c_3].C-C1(-C)-O-B(-[c;H0;D3;+0_4](_[c_5])_[c_6])-O-C-1(-C)-C" -> "COC(=O)CC12CCC(c3ccc(Br)cc3)(CC1)CO2" [label=""]
+}

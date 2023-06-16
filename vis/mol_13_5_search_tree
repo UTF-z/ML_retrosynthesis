@@ -1,0 +1,21 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"CCCN(CCC)Cc1cc(CO)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [color=red shape=box style=filled]
+	"[OH;D1;+0_2]-[CH2;D2;+0_1]-[c_3]>>C-O-[C;H0;D3;+0_1](=[O;H0;D1;+0_2])-[c_3]" [color=red shape=rarrow style=filled]
+	"CCCN(CCC)Cc1cc(CO)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" -> "[OH;D1;+0_2]-[CH2;D2;+0_1]-[c_3]>>C-O-[C;H0;D3;+0_1](=[O;H0;D1;+0_2])-[c_3]" [label=0.323]
+	"[OH;D1;+0_1]-[CH2;D2;+0_2]-[c_3]>>[O;H0;D1;+0_1]=[CH;D2;+0_2]-[c_3]" [color=red shape=rarrow style=filled]
+	"CCCN(CCC)Cc1cc(CO)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" -> "[OH;D1;+0_1]-[CH2;D2;+0_2]-[c_3]>>[O;H0;D1;+0_1]=[CH;D2;+0_2]-[c_3]" [label=1.912]
+	"[C_2]-[OH;D1;+0_1]>>C-C(=O)-[O;H0;D2;+0_1]-[C_2]" [color=red shape=rarrow style=filled]
+	"CCCN(CCC)Cc1cc(CO)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" -> "[C_2]-[OH;D1;+0_1]>>C-C(=O)-[O;H0;D2;+0_1]-[C_2]" [label=2.575]
+	"[#7;a_1]_[c_2]_[c_3]-[CH2;D2;+0_4]-[OH;D1;+0_5]>>[#7;a_1]_[c_2]_[c_3]-[CH;D2;+0_4]=[O;H0;D1;+0_5]" [color=red shape=rarrow style=filled]
+	"CCCN(CCC)Cc1cc(CO)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" -> "[#7;a_1]_[c_2]_[c_3]-[CH2;D2;+0_4]-[OH;D1;+0_5]>>[#7;a_1]_[c_2]_[c_3]-[CH;D2;+0_4]=[O;H0;D1;+0_5]" [label=5.725]
+	"CCCN(CCC)Cc1cc(C(=O)OC)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [color=red shape=box style=filled]
+	"[OH;D1;+0_2]-[CH2;D2;+0_1]-[c_3]>>C-O-[C;H0;D3;+0_1](=[O;H0;D1;+0_2])-[c_3]" -> "CCCN(CCC)Cc1cc(C(=O)OC)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [label=""]
+	"CCCN(CCC)Cc1cc(C=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [color=red shape=box style=filled]
+	"[OH;D1;+0_1]-[CH2;D2;+0_2]-[c_3]>>[O;H0;D1;+0_1]=[CH;D2;+0_2]-[c_3]" -> "CCCN(CCC)Cc1cc(C=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [label=""]
+	"CCCN(CCC)Cc1cc(COC(C)=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [color=red shape=box style=filled]
+	"[C_2]-[OH;D1;+0_1]>>C-C(=O)-[O;H0;D2;+0_1]-[C_2]" -> "CCCN(CCC)Cc1cc(COC(C)=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [label=""]
+	"CCCN(CCC)Cc1cc(C=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [color=red shape=box style=filled]
+	"[#7;a_1]_[c_2]_[c_3]-[CH2;D2;+0_4]-[OH;D1;+0_5]>>[#7;a_1]_[c_2]_[c_3]-[CH;D2;+0_4]=[O;H0;D1;+0_5]" -> "CCCN(CCC)Cc1cc(C=O)c(=O)n2c(-c3c(C)cc(C)cc3C)cccc12" [label=""]
+}
