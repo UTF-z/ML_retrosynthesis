@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import sys
 sys.path.append('.')
 import pickle
@@ -63,6 +64,8 @@ def generate_data():
         drop_idx = []
         total_cnt = 0
         new_cnt = 0
+        fail_cnt = 0
+        debug_total_cnt = 0
         with tqdm(range(len(reactions))) as tbar:
             for i in range(len(reactions)):
                 reactants, products = reactions[i].split('>>')
@@ -78,6 +81,10 @@ def generate_data():
                         fingerprints.append(fp)
                         templates.append(temp)
                         smiles.append(product)
+                        reactants = get_reactants(smile=product, temp=temp)
+                        if reactants is None:
+                            fail_cnt += 1
+                        debug_total_cnt += 1
                         _exist = train_temp_record.get(temp, 0)
                         if _exist == 0:
                             new_cnt += 1
@@ -88,6 +95,7 @@ def generate_data():
                         drop_idx.append(i)
                         tbar.set_postfix_str(f'total drop: {drop_cnt}')
                         logger.critical(f'drop_idx: {drop_idx}')
+                tbar.set_postfix_str(f'fail_ratio: {fail_cnt/debug_total_cnt}')
                 tbar.update()
         if raw_data_path == 'raw_train.csv':
             train_temp_record.update(temp_hash)
@@ -102,7 +110,6 @@ def generate_data():
         with open(data_path / target_list[idx], 'wb') as f:
             pickle.dump(target_data, f)
         print(raw_data_path, 'done.')
-
     temp_hash = dict(zip(temp_hash.keys(), range(len(temp_hash))))
     with open(data_path / 'temp_hash.pkl', 'wb') as f:
         pickle.dump(temp_hash, f)
@@ -116,7 +123,7 @@ def save_best(model,path):
 def load_best(path):
     return torch.load(path)['model']
 
-def vis_prod_vs_temp(data_path):
+def vis_prod_vs_temp():
     data = pd.read_csv('resources/raw_test.csv')
     a, b, c = data.columns
     reactions = data[c]
@@ -147,10 +154,14 @@ def vis_prod_vs_temp(data_path):
             tbar.set_postfix_str(f'cnt: {cnt}')
             print(cnt)
             prod_to_temp[pt] = cnt
+    with open('prod_to_temp.pkl', 'wb') as f:
+        pickle.dump(prod_to_temp, f)
+    with open('temp_to_prod.pkl', 'wb') as f:
+        pickle.dump(temp_to_prod, f)
     import matplotlib.pyplot as plt
-    plt.subplot(1, 2, 0)
-    plt.bar(prod_to_temp.keys(), prod_to_temp.values())
     plt.subplot(1, 2, 1)
+    plt.bar(prod_to_temp.keys(), prod_to_temp.values())
+    plt.subplot(1, 2, 2)
     plt.bar(temp_to_prod.keys(), temp_to_prod.values())
     plt.savefig('./temp_vs_prod.png')
 
@@ -201,6 +212,17 @@ def dataspliter(dataset: torch.Tensor,
     val_set = rand_set[int(total_size*train_ratio):]
     val_labels = rand_labels[int(total_size*train_ratio):]
     return (train_set,train_labels),(val_set,val_labels)
+
+
+def get_reactants(smile, temp):
+    try:
+        out = rdchiralRunText(temp, smile)
+        assert len(out) > 0, f'out: {out}, temp: {temp}, smile: {smile}'
+        out = out[0].split('.')
+        return out
+    except Exception as e:
+        return None
+
 
 if __name__ == '__main__':
     generate_data()

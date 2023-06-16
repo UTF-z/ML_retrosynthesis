@@ -3,7 +3,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait, ALL_COMPLETED
 import multiprocessing as mp
 
-
 def foo(num):
     cnt = 0
     for i in range(num):

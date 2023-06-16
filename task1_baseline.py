@@ -16,19 +16,10 @@ import argparse
 def test(ckpt_path):
     data_dir = Path('resources')
     test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    test_loader = DataLoader(test_set, batch_size=512, shuffle=False, drop_last=False)
-    model_config = {
-        'sizes': [2048, 512, 512, test_set.template_num],
-        'dropout': DROPOUT,
-        'weight_decay': WEIGHT_DECAY,
-        'device': DEVICE,
-        'topk': TOPK,
-        'hash_table': list(test_set.temp_hash.keys()),
-        'filter': FILTER,
-        'num_worker': NUM_WORKERS
-    }
-    model = Baseline(model_config).to(DEVICE)
-    model.load(ckpt_path)
+    test_loader = DataLoader(test_set, batch_size=BS, shuffle=False, drop_last=False)
+    model = Baseline.load_and_construct(ckpt_path)
+    model.filter = FILTER
+    model.topk = TOPK
     correct_num = 0
     total_num = 0
     for batch in tqdm(test_loader):
@@ -41,18 +32,7 @@ def inference(ckpt_path):
     data_dir = Path('resources')
     test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
     test_loader = DataLoader(test_set, batch_size=BS, shuffle=False, drop_last=False)
-    model_config = {
-        'sizes': [2048, 512, 512, test_set.template_num],
-        'dropout': DROPOUT,
-        'weight_decay': WEIGHT_DECAY,
-        'device': DEVICE,
-        'topk': TOPK,
-        'filter': FILTER,
-        'hash_table': list(test_set.temp_hash.keys()),
-        'num_worker': NUM_WORKERS
-    }
-    model = Baseline(model_config).to(DEVICE)
-    model.load(ckpt_path)
+    model = Baseline.load_and_construct(ckpt_path)
     topks = []
     for batch in tqdm(test_loader):
         topk = model(batch, mode='infer')
@@ -63,10 +43,45 @@ def inference(ckpt_path):
 
 def train():
     now = time.strftime("%d-%H%M%S", time.localtime(time.time()))
+
+    # get data
+    data_dir = Path('resources')
+    train_set = SingleStep(data_path=data_dir/'task1_train.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    val_set = SingleStep(data_path=data_dir/'task1_val.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    train_loader = DataLoader(train_set, batch_size=BS, shuffle=True, drop_last=False)
+    val_loader = DataLoader(val_set, batch_size=BS, shuffle=False, drop_last=False)
+    test_loader = DataLoader(test_set, batch_size=BS, shuffle=False, drop_last=False)
+
+    # get model
+    model_name = now + "_mlp.pkl"
+    ckpt_dir = Path('checkpoint') / 'task1'
+    ckpt_dir.mkdir(exist_ok=True)
+    state_dict_path = ckpt_dir / model_name
+    model_config = {
+        'sizes': [2048, HIDDEN_SIZE, HIDDEN_SIZE, train_set.template_num],
+        'dropout': DROPOUT,
+        'lr': LR,
+        'weight_decay': WEIGHT_DECAY,
+        'device': DEVICE,
+        'topk': TOPK,
+        'hash_table': list(train_set.temp_hash.keys()),
+        'filter': FILTER,
+        'num_worker': NUM_WORKERS,
+        'multi_processing': True
+    }
+    model = Baseline(model_config)
+
     # log setting
-    train_log_path = f'log/{now}_task1_baseline_train.log'
-    val_log_path = f'log/{now}_task1_baseline_val.log'
-    test_log_path = f'log/{now}_task1_baseline_test.log'
+    if FILTER:
+        log_dir = f'log/task1_filter/{now}'
+    else:
+        log_dir = f'log/task1_baseline/{now}'
+    os.makedirs(log_dir, exist_ok=True)
+    log_dir = Path(log_dir)
+    train_log_path = log_dir / f'train.log'
+    val_log_path = log_dir / f'val.log'
+    test_log_path = log_dir / f'test.log'
     try:
         os.remove(train_log_path)
     except Exception as e:
@@ -86,32 +101,6 @@ def train():
     log_train = logger.bind(name='train')
     log_test = logger.bind(name='test')
     log_val = logger.bind(name='val')
-
-    # get data
-    data_dir = Path('resources')
-    train_set = SingleStep(data_path=data_dir/'task1_train.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    val_set = SingleStep(data_path=data_dir/'task1_val.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    train_loader = DataLoader(train_set, batch_size=512, shuffle=True, drop_last=False)
-    val_loader = DataLoader(val_set, batch_size=512, shuffle=False, drop_last=False)
-    test_loader = DataLoader(test_set, batch_size=512, shuffle=False, drop_last=False)
-
-    # get model
-    model_name = now + "_mlp.pkl"
-    ckpt_dir = Path('checkpoint') / 'task1'
-    ckpt_dir.mkdir(exist_ok=True)
-    state_dict_path = ckpt_dir / model_name
-    model_config = {
-        'sizes': [2048, 512, 512, train_set.template_num],
-        'dropout': DROPOUT,
-        'weight_decay': WEIGHT_DECAY,
-        'device': DEVICE,
-        'topk': TOPK,
-        'hash_table': list(train_set.temp_hash.keys()),
-        'filter': FILTER,
-        'num_worker': NUM_WORKERS
-    }
-    model = Baseline(model_config).to(DEVICE)
 
     # train
     best_val_acc = 0
@@ -145,7 +134,7 @@ def train():
                 log_val.critical(f'epoch: {i}, val_acc: {val_acc}')
 
     log_train.critical('train finished') 
-    model.load(state_dict_path)
+    model.load_ckpt(state_dict_path)
     test_correct_cnt = 0
     test_total_cnt = 0
     with tqdm(test_loader) as testbar:
@@ -172,8 +161,10 @@ if __name__ == "__main__":
     parser.add_argument("--val_int", type=int, default=100)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--topk", type=int, default=10)
+    parser.add_argument("--hidden_size", type=int, default=512)
     parser.add_argument("--weight_decay", type=float, default=1e-4)
     parser.add_argument("--drop_out", type=float, default=0.5)
+    parser.add_argument("--lr", type=float, default=1e-4)
     args = parser.parse_args()
     EPOCH = args.epoch
     BS = args.batch_size
@@ -181,16 +172,18 @@ if __name__ == "__main__":
     DROPOUT = args.drop_out
     NUM_WORKERS = args.num_workers
     TOPK = args.topk
+    LR = args.lr
     WEIGHT_DECAY = args.weight_decay
     FILTER = args.filter
+    HIDDEN_SIZE = args.hidden_size
     if args.device == 'auto':
         DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
     else:
         DEVICE = 'cpu'
     if args.mode == 'test':
-        test('/root/final/checkpoint/task1/15-015051_mlp.pkl')    
+        test('checkpoint/task1/15-202804_mlp.pkl')    
     elif args.mode == 'infer':
-        inference('/root/final/checkpoint/task1/15-015051_mlp.pkl')
+        inference('checkpoint/task1/15-202804_mlp.pkl')
     elif args.mode == 'train':
         train()
 

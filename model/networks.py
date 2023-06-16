@@ -10,6 +10,7 @@ from torch.optim import Adam
 from utils.utils import is_compatible
 from tqdm import tqdm
 import torch.multiprocessing as mp
+from utils.utils import get_fp
 
 act_funcs={
     "relu": nn.ReLU,
@@ -30,6 +31,7 @@ class MLP(nn.Module):
     def __init__(self, sizes, dropout=0., act_func="relu", last_act=None) -> None:
         super().__init__()
         self.net = nn.Sequential()
+        self.device = 'cpu'
         for i, (in_size, out_size) in enumerate(zip(sizes[0:-1], sizes[1:])):
             self.net.add_module(f'fc_{i}', nn.Linear(in_size, out_size))
             if i < len(sizes) - 2:
@@ -37,6 +39,23 @@ class MLP(nn.Module):
                 self.net.add_module(f'{act_func}_{i}', act_funcs[act_func]())
         if last_act is not None:
             self.net.add_module(f'{last_act}_output', act_funcs[last_act]())
+    
+    def to(self, device):
+        super().to(device=device)
+        self.device = device
+        return self
+
+    def make_task2_infer_fn(self):
+
+        def inference(smile: str):
+            fp, _ = get_fp(smile)
+            fp = np.expand_dims(fp, axis=0)
+            fp = torch.FloatTensor(fp).to(self.device)
+            value = self.forward(fp).cpu()
+            value = value.squeeze(0)
+            return value
+        return inference
+
     
     def forward(self, x):
         return self.net(x)
@@ -63,6 +82,16 @@ class AutoEncoder(nn.Module):
 
 class Baseline(nn.Module):
 
+    @classmethod
+    def load_and_construct(cls, path):
+        with open(path, 'rb') as f:
+            ckpt = torch.load(f) 
+            config = ckpt['config']
+            state_dict = ckpt['state_dict']
+            model = cls(config)
+            model.load_state_dict(state_dict)
+        return model
+
     def __init__(self, config) -> None:
         super().__init__()
         sizes = config['sizes']
@@ -73,9 +102,11 @@ class Baseline(nn.Module):
         self.filter = config['filter']
         self.hash_table = config['hash_table']
         self.num_worker = config['num_worker']
-        self.filterK = self.topk * 5 if self.filter else self.topk
-        self.net = MLP(sizes, dropout=dropout)
-        self.optimizer = Adam(self.net.parameters(), lr=1e-3, weight_decay=weight_decay)
+        self.lr = config['lr']
+        self.multi_processing = config.get('multi_processing', True)
+        self.config = config
+        self.net = MLP(sizes, dropout=dropout).to(self.device)
+        self.optimizer = Adam(self.net.parameters(), lr=self.lr, weight_decay=weight_decay)
     
     def forward(self, pack, mode='train'):
         if mode == 'train':
@@ -97,8 +128,7 @@ class Baseline(nn.Module):
         _, label = torch.topk(out, 
                            k = 1, 
                            dim=1, 
-                           largest=True, 
-                           sorted=False)
+                           largest=True)
         train_correct_cnt = (label == gt.reshape(-1,1).repeat(1,1)).flatten().sum()
         train_total_cnt = len(label)
         return loss.item(), train_correct_cnt, train_total_cnt, {}
@@ -111,11 +141,11 @@ class Baseline(nn.Module):
         self.net.eval()
         fp = pack['fingerprint'].to(self.device)
         out = self.net(fp)
+        filterK = self.topk * 5 if self.filter else self.topk
         _, label = torch.topk(out, 
-                    k = self.filterK, 
+                    k = filterK, 
                     dim=1, 
-                    largest=True, 
-                    sorted=True)
+                    largest=True)
         if not self.filter:
             gt = pack['template_idx'].to(self.device)
             val_correct_cnt = (label == gt.reshape(-1,1).repeat(1,self.topk)).flatten().sum()
@@ -124,40 +154,56 @@ class Baseline(nn.Module):
             gt = pack['template_idx']
             label = label.cpu()
             prelabel = label[:,:self.topk]
-            label = label.share_memory_()
-            prelabel = prelabel.share_memory_()
-            step = (label.shape[0] + self.num_worker - 1) // self.num_worker
-            tasks = [mp.Process(target=self._is_compatible, args=(label, prelabel, pack['smile'], self.hash_table, j*step, min(label.shape[0], (j+1)*step))) for j in range(min(B, self.num_worker))]
-            [p.start() for p in tasks]
-            [p.join() for p in tasks]
+            if not self.multi_processing:
+                start = 0
+                end = len(label)
+                self._is_compatible(label, prelabel, pack['smile'], self.hash_table, start=start, end=end)
+            else:
+                label = label.share_memory_()
+                prelabel = prelabel.share_memory_()
+                step = (label.shape[0] + self.num_worker - 1) // self.num_worker
+                tasks = [mp.Process(target=self._is_compatible, args=(label, prelabel, pack['smile'], self.hash_table, j*step, min(label.shape[0], (j+1)*step))) for j in range(min(B, self.num_worker))]
+                [p.start() for p in tasks]
+                [p.join() for p in tasks]
             label = prelabel
             val_correct_cnt = (label == gt.reshape(-1,1).repeat(1,self.topk)).flatten().sum()
         val_total_cnt = len(label)
         return val_correct_cnt, val_total_cnt
     
+    @torch.no_grad()
     def inference(self, pack):
         self.net.eval()
         fp = pack['fingerprint'].to(self.device)
         out = self.net(fp)
-        _, label = torch.topk(out, 
-                    k = self.filterK, 
+        filterK = self.topk * 5 if self.filter else self.topk
+        out, label = torch.topk(out, 
+                    k = filterK, 
                     dim=1, 
-                    largest=True, 
-                    sorted=False)
+                    largest=True)
         if not self.filter:
-            return label[:, :self.topk].cpu()
+            out = out[:, :self.topk]
+            out = F.softmax(out, dim=1)
+            label = label[:, :self.topk]
+            return out.cpu(), label.cpu()
         else:
             B = label.shape[0]
+            out = out[:, :self.topk]
+            out = F.softmax(out, dim=1)
             label = label.cpu()
-            prelabel = label[:,:self.topk]
-            label = label.share_memory_()
-            prelabel = prelabel.share_memory_()
-            step = (label.shape[0] + self.num_worker - 1) // self.num_worker
-            tasks = [mp.Process(target=self._is_compatible, args=(label, prelabel, pack['smile'], self.hash_table, j*step, min(label.shape[0], (j+1)*step))) for j in range(min(B, self.num_worker))]
-            [p.start() for p in tasks]
-            [p.join() for p in tasks]
+            prelabel = label[:, :self.topk]
+            if not self.multi_processing:
+                start = 0
+                end = len(label)
+                self._is_compatible(label, prelabel, pack['smile'], self.hash_table, start=start, end=end)
+            else:
+                label = label.share_memory_()
+                prelabel = prelabel.share_memory_()
+                step = (label.shape[0] + self.num_worker - 1) // self.num_worker
+                tasks = [mp.Process(target=self._is_compatible, args=(label, prelabel, pack['smile'], self.hash_table, j*step, min(label.shape[0], (j+1)*step))) for j in range(min(B, self.num_worker))]
+                [p.start() for p in tasks]
+                [p.join() for p in tasks]
             label = prelabel
-        return label
+        return out.cpu(), label
 
     def _is_compatible(self, label, prelabel, smile, hash_table, start, end):
         for i in range(start, end):
@@ -171,14 +217,36 @@ class Baseline(nn.Module):
         return 0
     
     def save(self, path):
+        dump_file = {
+            'config': self.config,
+            'state_dict': self.state_dict()
+        }
         with open(path, 'wb') as f:
-            torch.save(self.state_dict(), f)
+            torch.save(dump_file, f)
     
-    def load(self, path):
+    def load_ckpt(self, path):
         with open(path, 'rb') as f:
-            state_dict = torch.load(f)
+            ckpt = torch.load(f)
+        state_dict = ckpt['state_dict']
         self.load_state_dict(state_dict)
 
+    def make_task1_infer_fn(self):
+
+        def inference(smile: str):
+            fp, _ = get_fp(smile)
+            fp = np.expand_dims(fp, axis=0)
+            fp = torch.FloatTensor(fp)
+            pack = {
+                'fingerprint': fp,
+                'smile': smile
+            }
+            prob, label = self.inference(pack)
+            prob = prob.numpy().squeeze(axis=0)
+            costs = -np.log(prob)
+            label = label.numpy().squeeze(axis=0)
+            temps = [self.hash_table[i] for i in label]
+            return temps, costs
+        return inference
 
 class PretrainedRegresser(nn.Module):
     def __init__(self,in_dim,act_func="relu") -> None:

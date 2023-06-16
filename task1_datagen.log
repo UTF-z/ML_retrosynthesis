@@ -70,3 +70,15 @@
 2023-06-15 01:41:53.958 | CRITICAL | __main__:generate_data:90 - drop_idx: [3606]
 2023-06-15 01:42:09.212 | CRITICAL | __main__:generate_data:101 - raw_val.csv: total temps: 5000, new temps: 989
 2023-06-15 01:43:01.472 | CRITICAL | __main__:generate_data:101 - raw_test.csv: total temps: 5007, new temps: 1000
+2023-06-16 11:31:23.113 | CRITICAL | __main__:generate_data:97 - drop_idx: [223]
+2023-06-16 11:32:27.689 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842]
+2023-06-16 11:32:31.744 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080]
+2023-06-16 11:34:14.327 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843]
+2023-06-16 11:34:36.996 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113]
+2023-06-16 11:34:52.619 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013]
+2023-06-16 11:35:37.247 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535]
+2023-06-16 11:36:05.225 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535, 16139]
+2023-06-16 11:39:56.899 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535, 16139, 29198]
+2023-06-16 11:40:13.084 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535, 16139, 29198, 30073]
+2023-06-16 11:40:16.720 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535, 16139, 29198, 30073, 30281]
+2023-06-16 11:40:46.407 | CRITICAL | __main__:generate_data:97 - drop_idx: [223, 3842, 4080, 9843, 11113, 12013, 14535, 16139, 29198, 30073, 30281, 31913]
