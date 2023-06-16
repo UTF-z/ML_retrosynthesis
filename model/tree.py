@@ -4,6 +4,10 @@ import os
 import numpy as np
 from utils.utils import get_reactants
 from tqdm import tqdm
+import networkx as nx
+from graphviz import Digraph
+from queue import Queue
+
 
 MAX_STEPS = 500
 
@@ -56,6 +60,10 @@ class MolNode(object):
     
     def has_children(self):
         return (len(self.children) > 0)
+
+    def serialize(self):
+        text = '%d | %s' % (self.rn, self.mol)
+        return text
 
 
 class ReactionNode(object):
@@ -307,6 +315,47 @@ class Tree(object):
 
     def value_fn(self, fp):
         return 0.
+    
+    def viz_search_tree(self, viz_file):
+        G = Digraph('G', filename=viz_file)
+        G.attr(rankdir='LR')
+        G.attr('node', shape='box')
+        G.format = 'pdf'
+
+        node_queue = Queue()
+        node_queue.put((self.root, None))
+        while not node_queue.empty():
+            node, parent = node_queue.get()
+
+            if node.open:
+                color = 'lightgrey'
+            else:
+                color = 'aquamarine'
+
+            if hasattr(node, 'mol'):
+                shape = 'box'
+            else:
+                shape = 'rarrow'
+
+            if node.succ:
+                color = 'lightblue'
+                if hasattr(node, 'mol') and node.is_known:
+                    color = 'lightyellow'
+
+            G.node(node.serialize(), shape=shape, color=color, style='filled')
+
+            label = ''
+            if hasattr(parent, 'mol'):
+                label = '%.3f' % node.cost
+            if parent is not None:
+                G.edge(parent.serialize(), node.serialize(), label=label)
+
+            if node.children is not None:
+                for c in node.children:
+                    node_queue.put((c, node))
+
+        G.render()
+
 
     # def expand(self, mol_node, reactant_lists, costs, templates):
     #     assert not mol_node.is_known and not mol_node.children
@@ -338,3 +387,4 @@ class Tree(object):
     #         self.succ = True
 
     #     return self.succ
+
