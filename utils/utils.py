@@ -217,7 +217,7 @@ def dataspliter(dataset: torch.Tensor,
 def get_reactants(smile, temp):
     try:
         out = rdchiralRunText(temp, smile)
-        assert len(out) > 0, f'out: {out}, temp: {temp}, smile: {smile}'
+        assert len(out) > 0
         out = out[0].split('.')
         return out
     except Exception as e:

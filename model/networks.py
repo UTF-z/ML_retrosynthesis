@@ -208,12 +208,16 @@ class Baseline(nn.Module):
     def _is_compatible(self, label, prelabel, smile, hash_table, start, end):
         for i in range(start, end):
             itr = 0
-            for k in range(label.shape[1]):
+            for k in range(self.topk, label.shape[1]):
                 if itr >= self.topk:
                     break
                 if is_compatible(smile[i], hash_table[label[i, k]]):
-                    prelabel[i, itr] = label[i, k]
-                    itr += 1
+                    while itr < self.topk:
+                        if not is_compatible(smile[i], hash_table[label[i, itr]]):
+                            prelabel[i, itr] = label[i, k]
+                            itr += 1
+                            break
+                        itr += 1
         return 0
     
     def save(self, path):
@@ -260,18 +264,32 @@ class PretrainedRegresser(nn.Module):
 
 class AEClassifier(nn.Module):
 
+    @classmethod
+    def load_and_construct(cls, path):
+        with open(path, 'rb') as f:
+            ckpt = torch.load(f) 
+            config = ckpt['config']
+            state_dict = ckpt['state_dict']
+            model = cls(config)
+            model.load_state_dict(state_dict)
+        return model
+
     def __init__(self, config) -> None:
         super().__init__()
-        input_dim = config['input_dim']
-        latent_dim = config['latent_dim']
-        header_size = config['header_size']
-        header_dropout = config['header_dropout']
-        lr = config['lr']
+        dropout = config['dropout']
+        weight_decay = config['weight_decay']
         self.device = config['device']
-        self.ae = AutoEncoder(input_dim, latent_dim)
-        self.header = MLP(header_size, dropout=header_dropout)
-        self.header_optimizer = Adam(self.header.parameters(), lr=lr)
-        self.ae_optimizer = Adam(self.ae.parameters(), lr=lr)
+        self.topk = config['topk']
+        self.filter = config['filter']
+        self.hash_table = config['hash_table']
+        self.num_worker = config['num_worker']
+        self.lr = config['lr']
+        self.multi_processing = config.get('multi_processing', True)
+        self.header_size = config['header_size']
+        self.ae = AutoEncoder(2048, 512)
+        self.header = MLP(self.header_size, dropout=dropout)
+        self.header_optimizer = Adam(self.header.parameters(), lr=self.lr)
+        self.ae_optimizer = Adam(self.ae.parameters(), lr=self.lr, weight_decay=weight_decay)
     
     def forward(self, pack, mode='train'):
         if mode == 'train':
@@ -325,14 +343,65 @@ class AEClassifier(nn.Module):
         correct_num = (pred == gt).sum()
         total_num = len(pred)
         return correct_num, total_num
+
+    @torch.no_grad()
+    def val_step(self, pack):
+        self.ae.eval()
+        fp = pack['fingerprint'].to(self.device)
+        recon, z = self.ae(fp)
+        out = self.header(z)
+        filterK = self.topk * 5 if self.filter else self.topk
+        _, label = torch.topk(out, 
+                    k = filterK, 
+                    dim=1, 
+                    largest=True)
+        if not self.filter:
+            gt = pack['template_idx'].to(self.device)
+            val_correct_cnt = (label == gt.reshape(-1,1).repeat(1,self.topk)).flatten().sum()
+        else:
+            B = label.shape[0]
+            gt = pack['template_idx']
+            label = label.cpu()
+            prelabel = label[:,:self.topk]
+            if not self.multi_processing:
+                start = 0
+                end = len(label)
+                self._is_compatible(label, prelabel, pack['smile'], self.hash_table, start=start, end=end)
+            else:
+                label = label.share_memory_()
+                prelabel = prelabel.share_memory_()
+                step = (label.shape[0] + self.num_worker - 1) // self.num_worker
+                tasks = [mp.Process(target=self._is_compatible, args=(label, prelabel, pack['smile'], self.hash_table, j*step, min(label.shape[0], (j+1)*step))) for j in range(min(B, self.num_worker))]
+                [p.start() for p in tasks]
+                [p.join() for p in tasks]
+            label = prelabel
+            val_correct_cnt = (label == gt.reshape(-1,1).repeat(1,self.topk)).flatten().sum()
+        val_total_cnt = len(label)
+        return val_correct_cnt, val_total_cnt
+
+    def _is_compatible(self, label, prelabel, smile, hash_table, start, end):
+        for i in range(start, end):
+            itr = 0
+            for k in range(label.shape[1]):
+                if itr >= self.topk:
+                    break
+                if is_compatible(smile[i], hash_table[label[i, k]]):
+                    prelabel[i, itr] = label[i, k]
+                    itr += 1
+        return 0
     
     def save(self, path):
+        dump_file = {
+            'config': self.config,
+            'state_dict': self.state_dict()
+        }
         with open(path, 'wb') as f:
-            torch.save(self.state_dict(), f)
+            torch.save(dump_file, f)
     
-    def load(self, path):
+    def load_ckpt(self, path):
         with open(path, 'rb') as f:
-            state_dict = torch.load(f)
+            ckpt = torch.load(f)
+        state_dict = ckpt['state_dict']
         self.load_state_dict(state_dict)
 
 

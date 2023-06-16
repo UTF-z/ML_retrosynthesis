@@ -1,0 +1,17 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" [color=red shape=box style=filled]
+	"[#16_3]-[C_2](=[#7_4])-[NH2;D1;+0_1]>>O=C(-[NH;D2;+0_1]-[C_2](-[#16_3])=[#7_4])-c1_c_c_c_c_c_1" [color=red shape=rarrow style=filled]
+	"NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" -> "[#16_3]-[C_2](=[#7_4])-[NH2;D1;+0_1]>>O=C(-[NH;D2;+0_1]-[C_2](-[#16_3])=[#7_4])-c1_c_c_c_c_c_1" [label=0.006]
+	"[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" [color=red shape=rarrow style=filled]
+	"NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" -> "[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" [label=9.287]
+	"O=C(NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1)c1ccccc1" [color=red shape=box style=filled]
+	"[#16_3]-[C_2](=[#7_4])-[NH2;D1;+0_1]>>O=C(-[NH;D2;+0_1]-[C_2](-[#16_3])=[#7_4])-c1_c_c_c_c_c_1" -> "O=C(NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1)c1ccccc1" [label=""]
+	"CC(C)(C)OC(=O)NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" [color=red shape=box style=filled]
+	"[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" -> "CC(C)(C)OC(=O)NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" [label=""]
+	"[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" [color=red shape=rarrow style=filled]
+	"O=C(NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1)c1ccccc1" -> "[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" [label=8.640]
+	"CC(C)(C)OC(=O)NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" [color=red shape=box style=filled]
+	"[#7_3]=[C_2]-[NH2;D1;+0_1]>>C-C(-C)(-C)-O-C(=O)-[NH;D2;+0_1]-[C_2]=[#7_3]" -> "CC(C)(C)OC(=O)NC1=N[C@@]2(c3ccc(F)cc3F)CO[C@@H](c3nnco3)C[C@H]2CS1" [label=""]
+}

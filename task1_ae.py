@@ -23,10 +23,26 @@ if __name__ == '__main__':
     VAL_INT = 10
     DROPOUT = 0.5
     now = time.strftime("%d-%H%M%S", time.localtime(time.time()))
+
+    # get data
+    data_dir = Path('resources')
+    train_set = SingleStep(data_path=data_dir/'task1_train.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    val_set = SingleStep(data_path=data_dir/'task1_val.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
+    train_loader = DataLoader(train_set, batch_size=512, shuffle=True, drop_last=False)
+    val_loader = DataLoader(val_set, batch_size=512, shuffle=False, drop_last=False)
+    test_loader = DataLoader(test_set, batch_size=512, shuffle=False, drop_last=False)
+
     # log setting
-    train_log_path = f'log/{now}_task1_baseline_train.log'
-    val_log_path = f'log/{now}_task1_baseline_val.log'
-    test_log_path = f'log/{now}_task1_baseline_test.log'
+    if FILTER:
+        log_dir = f'log/task1_filter/{now}'
+    else:
+        log_dir = f'log/task1_baseline/{now}'
+    os.makedirs(log_dir, exist_ok=True)
+    log_dir = Path(log_dir)
+    train_log_path = log_dir / f'train.log'
+    val_log_path = log_dir / f'val.log'
+    test_log_path = log_dir / f'test.log'
     try:
         os.remove(train_log_path)
     except Exception as e:
@@ -47,27 +63,22 @@ if __name__ == '__main__':
     log_test = logger.bind(name='test')
     log_val = logger.bind(name='val')
 
-    # get data
-    data_dir = Path('resources')
-    train_set = SingleStep(data_path=data_dir/'task1_train.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    val_set = SingleStep(data_path=data_dir/'task1_val.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    test_set = SingleStep(data_path=data_dir/'task1_test.pkl', temp_hash_path=data_dir/'temp_hash.pkl')
-    train_loader = DataLoader(train_set, batch_size=512, shuffle=True, drop_last=False)
-    val_loader = DataLoader(val_set, batch_size=512, shuffle=False, drop_last=False)
-    test_loader = DataLoader(test_set, batch_size=512, shuffle=False, drop_last=False)
-
     # get model
     model_name = now + "_mlp.pkl"
     ckpt_dir = Path('checkpoint') / 'task1'
     ckpt_dir.mkdir(exist_ok=True)
     state_dict_path = ckpt_dir / model_name
     model_config = {
-        'input_dim': 2048,
-        'latent_dim': 512,
         'header_size': [512, 512, train_set.template_num],
-        'header_dropout': 0.2,
-        'lr': 2.5e-4,
-        'device': 'cuda' if torch.cuda.is_available() else 'cpu',
+        'dropout': DROPOUT,
+        'lr': 1e-3,
+        'weight_decay': 1e-4,
+        'device': DEVICE,
+        'topk': 10,
+        'hash_table': list(train_set.temp_hash.keys()),
+        'filter': FILTER,
+        'num_worker': NUM_WORKERS,
+        'multi_processing': True
     }
     model = AEClassifier(model_config).to(DEVICE)
     # train

@@ -1,0 +1,9 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"C[C@H](c1ccccc1)N1C[C@]2(C(=O)OC(C)(C)C)C=CC[C@@H]2C1=S" [color=red shape=box style=filled]
+	"[C_2]-[CH;D2;+0_1]=[CH;D2;+0_3]-[C_4]>>C=[CH;D2;+0_1]-[C_2].C=[CH;D2;+0_3]-[C_4]" [color=red shape=rarrow style=filled]
+	"C[C@H](c1ccccc1)N1C[C@]2(C(=O)OC(C)(C)C)C=CC[C@@H]2C1=S" -> "[C_2]-[CH;D2;+0_1]=[CH;D2;+0_3]-[C_4]>>C=[CH;D2;+0_1]-[C_2].C=[CH;D2;+0_3]-[C_4]" [label=4.337]
+	"C=CC[C@@H]1C(=S)N([C@H](C)c2ccccc2)C[C@@]1(C=C)C(=O)OC(C)(C)C" [color=red shape=box style=filled]
+	"[C_2]-[CH;D2;+0_1]=[CH;D2;+0_3]-[C_4]>>C=[CH;D2;+0_1]-[C_2].C=[CH;D2;+0_3]-[C_4]" -> "C=CC[C@@H]1C(=S)N([C@H](C)c2ccccc2)C[C@@]1(C=C)C(=O)OC(C)(C)C" [label=""]
+}

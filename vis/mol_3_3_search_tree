@@ -1,0 +1,13 @@
+digraph G {
+	rankdir=LR
+	node [shape=box]
+	"CC(C)c1ccc(-n2nc(O)c3c(=O)c4ccc(Cl)cc4[nH]c3c2=O)cc1" [color=red shape=box style=filled]
+	"[OH;D1;+0_1]-[c_2]>>C-[O;H0;D2;+0_1]-[c_2]" [color=red shape=rarrow style=filled]
+	"CC(C)c1ccc(-n2nc(O)c3c(=O)c4ccc(Cl)cc4[nH]c3c2=O)cc1" -> "[OH;D1;+0_1]-[c_2]>>C-[O;H0;D2;+0_1]-[c_2]" [label=0.533]
+	"[OH;D1;+0_2]-[c_1]>>[c_1]-[O;H0;D2;+0_2]-C-c1_c_c_c_c_c_1" [color=red shape=rarrow style=filled]
+	"CC(C)c1ccc(-n2nc(O)c3c(=O)c4ccc(Cl)cc4[nH]c3c2=O)cc1" -> "[OH;D1;+0_2]-[c_1]>>[c_1]-[O;H0;D2;+0_2]-C-c1_c_c_c_c_c_1" [label=3.968]
+	"COc1nn(-c2ccc(C(C)C)cc2)c(=O)c2[nH]c3cc(Cl)ccc3c(=O)c12" [color=red shape=box style=filled]
+	"[OH;D1;+0_1]-[c_2]>>C-[O;H0;D2;+0_1]-[c_2]" -> "COc1nn(-c2ccc(C(C)C)cc2)c(=O)c2[nH]c3cc(Cl)ccc3c(=O)c12" [label=""]
+	"CC(C)c1ccc(-n2nc(OCc3ccccc3)c3c(=O)c4ccc(Cl)cc4[nH]c3c2=O)cc1" [color=red shape=box style=filled]
+	"[OH;D1;+0_2]-[c_1]>>[c_1]-[O;H0;D2;+0_2]-C-c1_c_c_c_c_c_1" -> "CC(C)c1ccc(-n2nc(OCc3ccccc3)c3c(=O)c4ccc(Cl)cc4[nH]c3c2=O)cc1" [label=""]
+}
